@@ -1,0 +1,37 @@
+version: "3.9"
+
+volumes:
+  pg_data:
+  redis_data:
+
+services:
+  pd_db:
+    container_name: pg_db
+    image: postgres:16.1-alpine3.19
+    environment:
+      POSTGRES_DB: "chatdb"
+      POSTGRES_USER: "admin_pg"
+      POSTGRES_PASSWORD: "admin_pg"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', "pg_isready -U admin_pg -d chatdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 4G
+  redis:
+    container_name: redis-stack
+    image: redis:alpine3.19
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
